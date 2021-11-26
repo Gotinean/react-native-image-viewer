@@ -63,15 +63,16 @@ export default class ImageViewer extends React.Component<Props, State> {
     if (prevProps.index !== this.props.index) {
       // 立刻预加载要看的图
       this.loadImage(this.props.index || 0);
-
       this.jumpToCurrentImage();
-
       // 显示动画
       Animated.timing(this.fadeAnim, {
         toValue: 1,
         duration: 200,
         useNativeDriver: !!this.props.useNativeDriver
       }).start();
+    }
+    if (prevProps.imageUrls?.length !== this.props.imageUrls?.length) {
+      this.init(this.props);
     }
   }
 
@@ -86,14 +87,14 @@ export default class ImageViewer extends React.Component<Props, State> {
     }
 
     // 给 imageSizes 塞入空数组
-    const imageSizes: IImageSize[] = [];
-    nextProps.imageUrls.forEach(imageUrl => {
-      imageSizes.push({
-        width: imageUrl.width || 0,
-        height: imageUrl.height || 0,
-        status: 'loading'
-      });
-    });
+    const imageSizes = this.state.imageSizes ?? [];
+    nextProps.imageUrls.forEach((imageUrl, i) => {
+      let nowImageSize = imageSizes[i];
+      imageSizes[i] = {
+        width: nowImageSize?.width ?? imageUrl.width ?? 0,
+        height: nowImageSize?.height ?? imageUrl.height ?? 0,
+        status: nowImageSize?.status ?? 'loading'
+      };
 
     this.setState(
       {
